@@ -16,8 +16,11 @@
 
 package com.google.android.gms.location.sample.basiclocationsample;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.TextView;
@@ -41,6 +44,8 @@ public class MainActivity extends ActionBarActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     protected static final String TAG = "basic-location-sample";
+
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     /**
      * Provides the entry point to Google Play services.
@@ -96,6 +101,42 @@ public class MainActivity extends ActionBarActivity implements
      */
     @Override
     public void onConnected(Bundle connectionHint) {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            getLocation();
+        } else {
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Explain to the user why we need to read the contacts
+                Toast.makeText(this, R.string.permission_rationale, Toast.LENGTH_LONG).show();
+            }
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,@NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted
+                    getLocation();
+
+
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }
+    }
+
+    private void getLocation() {
         // Provides a simple way of getting a device's location and is well suited for
         // applications that do not require a fine-grained location and that do not need location
         // updates. Gets the best and most recent location currently available, which may be null
